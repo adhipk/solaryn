@@ -4,7 +4,12 @@
  */
 import "./src/env.js";
 
-/** @type {import("next").NextConfig} */
-const config = {};
+/** @type {import('next').NextConfig} */
+const config = {
+  reactStrictMode: true,
+  images: {
+    domains: ['upload.wikimedia.org'],
+  },
+};
 
 export default config;
