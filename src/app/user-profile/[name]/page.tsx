@@ -1,11 +1,13 @@
+"use client"
+import { useParams } from "next/navigation";
 import { ProfileContent } from "~/components/ProfileContent"
 import TopNav from "~/components/TopNav";
 
-export default async function ProfilePage({ params }: { params: { name: string } }) {
-  const p = await params;
+export default function ProfilePage() {
+  const params = useParams<{name: string}>();
   return <div>
     <TopNav  text={"Profile"}/>
-    <ProfileContent name={p.name} />
+    <ProfileContent name={params.name} />
     </div>
 }
 
