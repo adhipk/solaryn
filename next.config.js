@@ -8,7 +8,7 @@ import "./src/env.js";
 const config = {
   reactStrictMode: true,
   images: {
-    domains: ['upload.wikimedia.org'],
+    domains: ['upload.wikimedia.org', 'en.wikipedia.org'],
   },
 };
 

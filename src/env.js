@@ -11,6 +11,8 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    WIKI_USERNAME: z.string(),
+    WIKI_PASSWORD: z.string(),
   },
 
   /**
@@ -29,6 +31,8 @@ export const env = createEnv({
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
+    WIKI_USERNAME: process.env.WIKI_USERNAME,
+    WIKI_PASSWORD: process.env.WIKI_PASSWORD,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
