@@ -22,7 +22,7 @@ export default function TopNav({ text }: { text: React.ReactNode }) {
         <SignedIn>
           <UserButton>
             <UserButton.MenuItems>
-            <UserButton.Link label="My Profile" href="/user-Profile" labelIcon={<User className="w-4 h-4"/>}/>    
+            <UserButton.Link label="My Profile" href="/user-profile" labelIcon={<User className="w-4 h-4"/>}/>    
             </UserButton.MenuItems>
             
           </UserButton>

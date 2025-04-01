@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import ProfileLayout from "~/components/ProfileLayout"
-import type { ProfileData } from "~/types/profile"
+import type { ProfileData } from "~/components/ProfileLayout"
 
 export function ProfileContent({ name }: { name: string }) {
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
@@ -26,7 +26,7 @@ export function ProfileContent({ name }: { name: string }) {
     }
 
     void loadProfile()
-  }, [])
+  }, [name])
 
   if (loading) {
     return (

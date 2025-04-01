@@ -1,11 +1,11 @@
 import { ProfileContent } from "~/components/ProfileContent"
 import TopNav from "~/components/TopNav";
 
-export default function ProfilePage({ params }: { params: { name: string } }) {
-  const name = params.name;
+export default async function ProfilePage({ params }: { params: { name: string } }) {
+  const p = await params;
   return <div>
     <TopNav  text={"Profile"}/>
-    <ProfileContent name={params.name} />
+    <ProfileContent name={p.name} />
     </div>
 }
 

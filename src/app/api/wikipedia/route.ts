@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { NextResponse } from "next/server"
 
 interface AuthResponse {
@@ -7,109 +8,31 @@ interface AuthResponse {
   expires_in: number
 }
 
-interface WikipediaImage {
+export interface Image {
   content_url: string
-  width: number
-  height: number
-  alternative_text?: string
 }
 
-interface WikipediaLink {
-  url: string
-  text: string
-  images?: WikipediaImage[]
+export interface InfoBoxes {
+  name: string
+  type: string
+  has_parts?: Part[] // An InfoBox can have nested parts
 }
 
-interface WikipediaField {
-  type: "field" | "infobox"
+export interface Part {
+  type: string
   name?: string
-  value: string
-  links?: WikipediaLink[]
+  value?: string
+  has_parts?: Part[] // A Part can have nested parts
 }
 
-interface WikipediaSection {
-  type: "section"
-  name: string
-  has_parts: (WikipediaField | WikipediaSection | WikipediaImage)[]
-}
-
-interface WikipediaInfobox {
-  name: string
-  type: "infobox"
-  has_parts: (WikipediaField | WikipediaSection)[]
-}
-
-interface WikipediaVersion {
-  identifier: number
-  comment: string
-  tags: string[]
-  scores: Record<string, unknown>
-  editor: {
-    identifier: number
-    name: string
-    edit_count: number
-    groups: string[]
-    date_started: string
-  }
-  number_of_characters: number
-  size: {
-    value: number
-    unit_text: string
-  }
-  maintenance_tags: Record<string, unknown>
-}
-
-interface WikipediaArticle {
-  name: string
-  identifier: number
-  abstract: string
-  date_created: string
-  date_modified: string
-  date_previously_modified: string
-  version: WikipediaVersion
-  previous_version: {
-    identifier: number
-    number_of_characters: number
-  }
-  url: string
-  namespace: {
-    identifier: number
-  }
-  in_language: {
-    identifier: string
-  }
-  main_entity: {
-    identifier: string
-    url: string
-  }
-  additional_entities: Array<{
-    identifier: string
-    url: string
-    aspects?: string[]
-  }>
-  categories: unknown[]
-  templates: unknown[]
-  is_part_of: {
-    identifier: string
-    url: string
-  }
-  article_body: {
-    html: string
-    wikitext: string
-  }
-  license: Array<{
-    name: string
-    identifier: string
-    url: string
-  }>
-  event: {
-    identifier: string
-    type: string
-    date_created: string
-    date_published: string
-  }
-  image: WikipediaImage
-  infoboxes: WikipediaInfobox[]
+export interface StructuredContent {
+  name?: string
+  url?: string
+  image?: Image
+  infoboxes?: InfoBoxes[]
+  sections?: Part[] // An article can have multiple sections, each with its own parts
+  abstract?: string
+  description?: string
 }
 
 let accessToken: string | null = null
@@ -145,7 +68,7 @@ async function getAccessToken(): Promise<string> {
   return accessToken
 }
 
-async function fetchWikipediaArticle(name: string, token: string): Promise<WikipediaArticle[]> {
+async function fetchWikipediaArticle(name: string, token: string): Promise<StructuredContent[]> {
   const response = await fetch('https://api.enterprise.wikimedia.com/v2/structured-contents/' + encodeURIComponent(name), {
     method: 'POST',
     headers: {
@@ -168,7 +91,7 @@ async function fetchWikipediaArticle(name: string, token: string): Promise<Wikip
     throw new Error(`Failed to fetch Wikipedia article: ${response.statusText}`)
   }
 
-  return response.json() as Promise<WikipediaArticle[]>
+  return response.json() as Promise<StructuredContent[]>
 }
 
 export async function GET(request: Request) {
@@ -184,8 +107,8 @@ export async function GET(request: Request) {
     }
 
     let token = await getAccessToken()
-    console.log('token',token);
-    let data: WikipediaArticle[]
+
+    let data: StructuredContent[]
 
     try {
       data = await fetchWikipediaArticle(name, token)
@@ -200,7 +123,7 @@ export async function GET(request: Request) {
         throw error
       }
     }
-    console.log('article',data)
+
     const article = data[0]
     
     if (!article) {
@@ -209,28 +132,23 @@ export async function GET(request: Request) {
         { status: 404 }
       )
     }
-    console.log('article infoboxes',article.infoboxes);
+
     // Transform the data to match our ProfileLayout structure
     const profileData = {
       profileImage: article.image?.content_url ?? "/placeholder.svg?height=400&width=300",
-      name: article.name,
+      name: article.name ?? "Unknown",
       socialStats: {
-        twitter: 0,
-        instagram: 0,
-        facebook: 0,
-        youtube: 0,
+        twitter: 2000,
+        instagram: 3000,
+        facebook: 32220,
+        youtube: 433330,
       },
       details: [
-        { key: "Full Name", value: article.name },
-        { key: "Description", value: article.abstract.split(".")[0] },
-        { key: "Last Updated", value: new Date(article.date_modified).toLocaleDateString() }
+        { key: "Full Name", value: article.name ?? "Unknown" },
+        { key: "Description", value: article.abstract?.split(".")[0] ?? "No description available" },
+        { key: "Last Updated", value: new Date().toLocaleDateString() }
       ],
-      additionalInfo: article.infoboxes?.[0]?.has_parts
-        .map(field => ({
-          key: field.name ?? field.value.split(" ")[0],
-          value: field.has_parts.map(part => part.value).join(" ")
-          
-        })) ?? []
+      additionalInfo: article.infoboxes ?? []
     }
 
     return NextResponse.json(profileData)

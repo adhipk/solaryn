@@ -1,7 +1,25 @@
 import { useState } from "react"
 import Image from "next/image"
 import { ChevronRight, Twitter, Instagram, Facebook, Youtube } from "lucide-react"
-import type { ProfileData } from "~/types/profile"
+import type { InfoBoxes, Part } from "~/app/api/wikipedia/route"
+
+interface DetailItem {
+  key: string
+  value: string | string[]
+}
+
+export interface ProfileData {
+  profileImage: string
+  name: string
+  socialStats: {
+    twitter: number
+    instagram: number
+    facebook: number
+    youtube: number
+  }
+  details: DetailItem[]
+  additionalInfo: InfoBoxes[]
+}
 
 export default function ProfileLayout({
   profileImage,
@@ -11,7 +29,7 @@ export default function ProfileLayout({
   additionalInfo,
 }: ProfileData) {
   const [isFollowing, setIsFollowing] = useState(false)
-
+  console.log(additionalInfo)
   const renderDetailValue = (value: string | string[]) => {
     if (Array.isArray(value)) {
       return (
@@ -26,6 +44,33 @@ export default function ProfileLayout({
       )
     }
     return <div className="text-sm">{value}</div>
+  }
+
+  const renderPart = (part: Part, index: number) => {
+    if (!part.type) return null
+
+    return (
+      <div key={index} className="bg-[#1a1a1a] text-white rounded-md mb-2 flex flex-col gap-2 p-1">
+        <div>
+        {part.name && (
+          <span className="mb-1 font-bold text-xs">
+            {part.name.toUpperCase() + ": "}
+          </span>
+        )}
+        {part.value && (
+          <span className="text-sm">{part.value}</span>
+        )}  
+        </div>
+        
+        {part.has_parts && part.has_parts.length > 0 && (
+          <div>
+            {part.has_parts.map((nestedPart, nestedIndex) => 
+              renderPart(nestedPart, nestedIndex)
+            )}
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -50,28 +95,28 @@ export default function ProfileLayout({
 
       {/* Social Stats */}
       <div className="flex justify-between px-4 mb-4">
-        {socialStats.twitter && (
+        {socialStats.twitter>0 && (
           <div className="flex flex-col items-center">
-            <span className="font-semibold text-sm">{socialStats.twitter}</span>
-            <Twitter className="w-4 h-4 mt-1" />
+            <span className="font-semibold text-sm">{socialStats.twitter.toLocaleString()}</span>
+            <Twitter className="w-8 h-8 mt-1" />
           </div>
         )}
-        {socialStats.instagram && (
+        {socialStats.instagram>0 && (
           <div className="flex flex-col items-center">
-            <span className="font-semibold text-sm">{socialStats.instagram}</span>
-            <Instagram className="w-4 h-4 mt-1" />
+            <span className="font-semibold text-sm">{socialStats.instagram.toLocaleString()}</span>
+            <Instagram className="w-8 h-8 mt-1" />
           </div>
         )}
-        {socialStats.facebook && (
+        {socialStats.facebook>0 && (
           <div className="flex flex-col items-center">
-            <span className="font-semibold text-sm">{socialStats.facebook}</span>
-            <Facebook className="w-4 h-4 mt-1" />
+            <span className="font-semibold text-sm">{socialStats.facebook.toLocaleString()}</span>
+            <Facebook className="w-8 h-8 mt-1" />
           </div>
         )}
-        {socialStats.youtube && (
+        {socialStats.youtube>0 && (
           <div className="flex flex-col items-center">
-            <span className="font-semibold text-sm">{socialStats.youtube}</span>
-            <Youtube className="w-4 h-4 mt-1" />
+            <span className="font-semibold text-sm">{socialStats.youtube.toLocaleString()}</span>
+            <Youtube className="w-8 h-8 mt-1" />
           </div>
         )}
       </div>
@@ -100,10 +145,16 @@ export default function ProfileLayout({
       {/* Additional Info Section */}
       <div className="px-4 mb-6">
         <h2 className="text-lg font-medium mb-2">Additional Information</h2>
-        {additionalInfo.map((info, index) => (
-          <div key={index} className="bg-[#1a1a1a] text-white p-3 rounded-md mb-2">
-            <div className="mb-1 font-medium text-xs">{info.key.toUpperCase()}</div>
-            {renderDetailValue(info.value)}
+        {additionalInfo.map((infobox, infoboxIndex) => (
+          <div key={infoboxIndex} className="mb-4">
+            {infobox.name && (
+              <h3 className="text-md font-medium mb-2">{infobox.name}</h3>
+            )}
+            {infobox.has_parts && infobox.has_parts.length > 0 && (
+              <div className="space-y-2">
+                {infobox.has_parts.map((part, partIndex) => renderPart(part, partIndex))}
+              </div>
+            )}
           </div>
         ))}
       </div>
